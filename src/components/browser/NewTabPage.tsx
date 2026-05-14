@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
-import { faviconFor, getHistory, type Bookmark } from "@/lib/browser-store";
+import { faviconFor, getHistory, type Bookmark, type HistoryEntry } from "@/lib/browser-store";
 
 const SHORTCUTS = [
   { title: "Google", url: "https://www.google.com" },
@@ -15,7 +15,8 @@ const SHORTCUTS = [
 
 export function NewTabPage({ onNavigate, bookmarks }: { onNavigate: (url: string) => void; bookmarks: Bookmark[] }) {
   const [q, setQ] = useState("");
-  const recent = getHistory().slice(0, 6);
+  const [recent, setRecent] = useState<HistoryEntry[]>([]);
+  useEffect(() => { setRecent(getHistory().slice(0, 6)); }, []);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
