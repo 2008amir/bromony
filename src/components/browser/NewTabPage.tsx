@@ -17,10 +17,14 @@ export function NewTabPage({ onNavigate, bookmarks }: { onNavigate: (url: string
   const [recent, setRecent] = useState<HistoryEntry[]>([]);
   useEffect(() => { setRecent(getHistory().slice(0, 6)); }, []);
 
-  const submit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!q.trim()) return;
-    onNavigate(q);
+    const form = e.currentTarget;
+    const input = form.elements.namedItem("q") as HTMLInputElement;
+    const value = input.value.trim();
+    if (!value) return;
+    onNavigate(`https://www.google.com/search?q=${encodeURIComponent(value)}`);
+    input.value = "";
   };
 
   return (
@@ -30,15 +34,9 @@ export function NewTabPage({ onNavigate, bookmarks }: { onNavigate: (url: string
         <h1 className="text-4xl font-semibold tracking-tight">Bromony</h1>
       </div>
 
-      <form onSubmit={submit} className="w-full max-w-2xl relative">
-        <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <input
-          autoFocus
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search the web or type a URL"
-          className="w-full h-14 pl-14 pr-5 rounded-full bg-card border border-border shadow-sm focus:shadow-md focus:border-primary outline-none text-base transition-all"
-        />
+      <form action="https://www.google.com/search" method="GET" onSubmit={handleSubmit} className="bromony-search w-full max-w-2xl flex gap-2">
+        <input type="text" name="q" placeholder="Search Google..." className="flex-1 h-14 px-5 rounded-full bg-card border border-border shadow-sm focus:shadow-md focus:border-primary outline-none text-base transition-all" />
+        <button type="submit" className="h-14 px-6 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">Search</button>
       </form>
 
       <div className="mt-12 grid grid-cols-4 sm:grid-cols-8 gap-4 max-w-3xl w-full">
