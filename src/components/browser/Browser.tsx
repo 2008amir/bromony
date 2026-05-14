@@ -71,11 +71,6 @@ export function Browser() {
   const navigate = (raw: string, tabId = activeId) => {
     const url = resolveInput(raw);
     if (!url) return;
-    if (getGoogleQuery(url) !== null) {
-      window.open(url, "_blank", "noopener,noreferrer");
-      recordHistory(url, "Google Search");
-      return;
-    }
     setTabs(ts => ts.map(t => {
       if (t.id !== tabId) return t;
       const newHistory = [...t.history.slice(0, t.index + 1), url];
