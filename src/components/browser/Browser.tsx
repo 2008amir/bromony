@@ -191,7 +191,7 @@ export function Browser() {
             onChange={(e) => setAddressValue(e.target.value)}
             onFocus={(e) => { setAddressFocused(true); e.currentTarget.select(); }}
             onBlur={() => { setAddressFocused(false); setAddressValue(isNewTab ? "" : currentUrl); }}
-            placeholder="Search Google or type a URL"
+            placeholder="Search DuckDuckGo or type a URL"
             className="w-full h-9 pl-9 pr-10 rounded-full bg-background border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all"
           />
           <button type="button" onClick={toggleBookmark} disabled={isNewTab}
