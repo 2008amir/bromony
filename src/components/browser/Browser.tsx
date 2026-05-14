@@ -245,7 +245,6 @@ export function Browser() {
               </div>
             ) : null;
           }
-          }
           return (
             <iframe
               key={`${t.id}-${t.key}`}
