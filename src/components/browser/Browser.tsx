@@ -340,14 +340,26 @@ function SearchResults({
   query, googleUrl, onReady,
 }: { query: string; googleUrl: string; onReady: () => void; onNavigate: (u: string) => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [failed, setFailed] = useState(false);
+  const openedRef = useRef(false);
+
+  const openFallback = () => {
+    if (openedRef.current) return;
+    openedRef.current = true;
+    setFailed(true);
+    try { window.open(googleUrl, "_blank", "noopener,noreferrer"); } catch {}
+  };
 
   useEffect(() => {
     const CSE_SRC = "https://cse.google.com/cse.js?cx=b3263617a6dc449e5";
-    const ensureScript = () => new Promise<void>((resolve) => {
+    let cancelled = false;
+
+    const ensureScript = () => new Promise<void>((resolve, reject) => {
       if ((window as any).google?.search?.cse) return resolve();
       const existing = document.querySelector(`script[src="${CSE_SRC}"]`) as HTMLScriptElement | null;
       if (existing) {
         existing.addEventListener("load", () => resolve(), { once: true });
+        existing.addEventListener("error", () => reject(new Error("cse load error")), { once: true });
         if ((window as any).google?.search?.cse) resolve();
         return;
       }
@@ -355,36 +367,47 @@ function SearchResults({
       s.src = CSE_SRC;
       s.async = true;
       s.onload = () => resolve();
+      s.onerror = () => reject(new Error("cse load error"));
       document.head.appendChild(s);
     });
 
-    ensureScript().then(() => {
+    const timeoutId = window.setTimeout(() => {
+      if (cancelled) return;
       const el = containerRef.current;
-      if (!el) return;
-      el.innerHTML = `<div class="gcse-searchresults-only" data-queryParameterName="q"></div>`;
-      const url = new URL(window.location.href);
-      url.searchParams.set("q", query);
-      window.history.replaceState(null, "", url.toString());
-      const cse = (window as any).google?.search?.cse;
-      if (cse?.element) {
-        try {
-          const elements = cse.element.getAllElements();
-          Object.keys(elements).forEach(k => elements[k].execute(query));
-        } catch {}
-        (window as any).__gcse = { parsetags: "explicit", initializationCallback: () => {
-          (window as any).google.search.cse.element.render({ div: el.firstElementChild, tag: "searchresults-only" });
-        }};
+      const hasResults = el && el.querySelector(".gsc-result, .gsc-webResult, .gsc-resultsbox-visible");
+      if (!hasResults) {
+        openFallback();
+        onReady();
       }
-      // Use render API directly
-      try {
-        (window as any).google.search.cse.element.render({
-          div: el.firstElementChild as HTMLElement,
-          tag: "searchresults-only",
-          attributes: { queryParameterName: "q" },
-        });
-      } catch {}
-      onReady();
-    });
+    }, 6000);
+
+    ensureScript()
+      .then(() => {
+        if (cancelled) return;
+        const el = containerRef.current;
+        if (!el) return;
+        el.innerHTML = `<div class="gcse-searchresults-only" data-queryParameterName="q"></div>`;
+        try {
+          (window as any).google.search.cse.element.render({
+            div: el.firstElementChild as HTMLElement,
+            tag: "searchresults-only",
+            attributes: { queryParameterName: "q" },
+          });
+          const cse = (window as any).google?.search?.cse;
+          const elements = cse?.element?.getAllElements?.() || {};
+          Object.keys(elements).forEach(k => { try { elements[k].execute(query); } catch {} });
+        } catch {
+          openFallback();
+        }
+        onReady();
+      })
+      .catch(() => {
+        if (cancelled) return;
+        openFallback();
+        onReady();
+      });
+
+    return () => { cancelled = true; window.clearTimeout(timeoutId); };
   }, [query]);
 
   return (
@@ -397,6 +420,12 @@ function SearchResults({
           </p>
         </div>
       </div>
+      {failed && (
+        <div className="mb-4 p-3 rounded-md border border-border bg-muted/40 text-sm">
+          <p className="mb-2">Embedded results couldn't load. We opened the full Google results in a new tab.</p>
+          <a href={googleUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">Open results again →</a>
+        </div>
+      )}
       <div ref={containerRef} className="gcse-container" />
     </div>
   );
