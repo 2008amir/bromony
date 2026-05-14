@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import { faviconFor, getHistory, type Bookmark, type HistoryEntry } from "@/lib/browser-store";
 
 const SHORTCUTS = [
-  { title: "DuckDuckGo", url: "https://html.duckduckgo.com/html/" },
+  { title: "DuckDuckGo", url: "/proxy?url=https%3A%2F%2Fhtml.duckduckgo.com%2Fhtml%2F" },
   { title: "YouTube", url: "https://www.youtube.com" },
   { title: "GitHub", url: "https://github.com" },
   { title: "Wikipedia", url: "https://wikipedia.org" },

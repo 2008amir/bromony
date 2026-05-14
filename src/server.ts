@@ -69,6 +69,45 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      // Simple proxy endpoint to bypass sites that block embedding via
+      // X-Frame-Options / Content-Security-Policy. Use with caution.
+      // Example: /proxy?url=https://html.duckduckgo.com/html/
+      const url = new URL(request.url);
+      if (url.pathname === "/proxy") {
+        const target = url.searchParams.get("url") ?? "";
+        if (!target) return new Response("Missing url parameter", { status: 400 });
+
+        // Forward the incoming request method/headers/body where appropriate
+        const init: RequestInit = {
+          method: request.method,
+          headers: Object.fromEntries(request.headers),
+          redirect: "follow",
+        };
+        if (request.method !== "GET" && request.method !== "HEAD") {
+          init.body = await request.arrayBuffer();
+        }
+
+        const upstream = await fetch(target, init);
+
+        // Clone headers and remove frame-blocking/security headers that
+        // prevent embedding. Keep other headers intact.
+        const headers = new Headers(upstream.headers);
+        headers.delete("x-frame-options");
+        headers.delete("content-security-policy");
+        headers.delete("frame-ancestors");
+        headers.delete("x-content-type-options");
+
+        // It's useful for the browser to treat this as same-origin; allow
+        // CORS from same origin if a browser requests resources via fetch.
+        headers.set("access-control-allow-origin", "*");
+
+        return new Response(upstream.body, {
+          status: upstream.status,
+          statusText: upstream.statusText,
+          headers,
+        });
+      }
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
