@@ -26,8 +26,8 @@ export function NewTabPage({ onNavigate, bookmarks }: { onNavigate: (url: string
   return (
     <div className="min-h-full w-full bg-background flex flex-col items-center pt-24 px-6">
       <div className="flex items-center gap-3 mb-8">
-        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-blue-400 grid place-items-center text-primary-foreground font-bold text-xl shadow-lg">N</div>
-        <h1 className="text-4xl font-semibold tracking-tight">Nova</h1>
+        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-blue-400 grid place-items-center text-primary-foreground font-bold text-xl shadow-lg">B</div>
+        <h1 className="text-4xl font-semibold tracking-tight">Bromony</h1>
       </div>
 
       <form onSubmit={submit} className="w-full max-w-2xl relative">
