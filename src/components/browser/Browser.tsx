@@ -138,7 +138,7 @@ export function Browser() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-chrome text-chrome-foreground overflow-hidden">
+    <div className="h-screen w-screen flex flex-col bg-chrome text-chrome-foreground overflow-hidden relative">
       <div className="flex items-center gap-1 px-2 py-2 bg-chrome border-b border-border">
         <IconBtn onClick={goHome} label="Home"><Home className="h-5 w-5" /></IconBtn>
 
