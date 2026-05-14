@@ -251,6 +251,49 @@ export function Browser() {
         )}
       </div>
 
+      <div className="flex items-center justify-around gap-1 px-2 py-1.5 bg-chrome border-t border-border">
+        <IconBtn onClick={back} disabled={active.index === 0} label="Back"><ArrowLeft className="h-5 w-5" /></IconBtn>
+        <IconBtn onClick={forward} disabled={active.index >= active.history.length - 1} label="Forward"><ArrowRight className="h-5 w-5" /></IconBtn>
+        <IconBtn onClick={refresh} label="Reload"><RotateCw className={`h-5 w-5 ${active.loading ? "animate-spin" : ""}`} /></IconBtn>
+        <IconBtn onClick={() => setShowHistory(true)} label="History"><HistoryIcon className="h-5 w-5" /></IconBtn>
+        <IconBtn onClick={() => setDark(d => !d)} label="Toggle theme">{dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}</IconBtn>
+      </div>
+
+      {showTabs && (
+        <div className="absolute inset-0 z-50 bg-background flex flex-col">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <h2 className="text-base font-semibold">{tabs.length} {tabs.length === 1 ? "tab" : "tabs"}</h2>
+            <div className="flex items-center gap-2">
+              <button onClick={() => { addTab(); setShowTabs(false); }} className="h-9 w-9 grid place-items-center rounded-full hover:bg-accent" aria-label="New tab"><Plus className="h-5 w-5" /></button>
+              <button onClick={() => setShowTabs(false)} className="h-9 w-9 grid place-items-center rounded-full hover:bg-accent" aria-label="Close"><X className="h-5 w-5" /></button>
+            </div>
+          </div>
+          <div className="flex-1 overflow-auto p-3 grid grid-cols-2 gap-3">
+            {tabs.map(t => {
+              const url = t.history[t.index];
+              const isActive = t.id === activeId;
+              return (
+                <div key={t.id} className={`relative rounded-xl border ${isActive ? "border-primary" : "border-border"} bg-card overflow-hidden`}>
+                  <button onClick={() => { setActiveId(t.id); setShowTabs(false); }} className="w-full text-left">
+                    <div className="flex items-center gap-2 px-3 py-2">
+                      {url !== NEW_TAB ? <img src={faviconFor(url)} alt="" className="h-4 w-4" /> : <Globe className="h-4 w-4 text-muted-foreground" />}
+                      <span className="truncate text-sm flex-1">{t.title || "New Tab"}</span>
+                    </div>
+                    <div className="h-32 bg-muted/40 px-3 py-2 text-[11px] text-muted-foreground truncate border-t border-border">
+                      {url === NEW_TAB ? "Bromony" : url}
+                    </div>
+                  </button>
+                  <button onClick={() => closeTab(t.id)} aria-label="Close tab"
+                    className="absolute top-1.5 right-1.5 h-6 w-6 grid place-items-center rounded-full bg-background/80 hover:bg-accent">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes loading {
           0% { transform: translateX(-100%); }
