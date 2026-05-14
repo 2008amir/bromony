@@ -334,7 +334,7 @@ function getGoogleQuery(url: string): string | null {
   } catch { return null; }
 }
 
-type DDGResult = { Text: string; FirstURL: string };
+
 
 function SearchResults({
   query, googleUrl, onReady,
