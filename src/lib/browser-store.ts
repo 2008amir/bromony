@@ -34,5 +34,6 @@ export const resolveInput = (input: string): string => {
   if (urlLike) {
     return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
   }
-  return `https://www.google.com/search?q=${encodeURIComponent(trimmed)}`;
+  const q = encodeURIComponent(trimmed);
+  return `https://www.google.com/search?q=${q}&oq=${q}&sourceid=chrome&ie=UTF-8`;
 };
