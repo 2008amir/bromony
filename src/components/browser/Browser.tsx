@@ -210,7 +210,7 @@ export function Browser() {
               <MenuItem onClick={() => { setShowHistory(true); setShowMenu(false); }}>History</MenuItem>
               <MenuItem onClick={() => { clearHistory(); setHistory([]); setShowMenu(false); }}>Clear history</MenuItem>
               <div className="h-px bg-border my-1" />
-              <div className="px-3 py-2 text-xs text-muted-foreground flex items-center gap-2"><Shield className="h-3 w-3" /> Nova Browser v1.0</div>
+              <div className="px-3 py-2 text-xs text-muted-foreground flex items-center gap-2"><Shield className="h-3 w-3" /> Bromony Browser v1.0</div>
             </div>
           )}
         </div>
