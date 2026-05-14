@@ -138,50 +138,12 @@ export function Browser() {
 
   return (
     <div className="h-screen w-screen flex flex-col bg-chrome text-chrome-foreground overflow-hidden">
-      <div className="flex items-end gap-1 px-2 pt-2 bg-chrome">
-        <div className="flex items-end gap-1 flex-1 overflow-x-auto scrollbar-thin">
-          {tabs.map(t => {
-            const url = t.history[t.index];
-            const isActive = t.id === activeId;
-            return (
-              <button
-                key={t.id}
-                onClick={() => setActiveId(t.id)}
-                className={`group relative flex items-center gap-2 px-3 h-9 min-w-[140px] max-w-[220px] rounded-t-lg text-sm transition-colors ${
-                  isActive ? "bg-tab-active text-foreground" : "bg-tab-inactive text-muted-foreground hover:bg-tab-inactive/70"
-                }`}
-              >
-                {url !== NEW_TAB ? (
-                  <img src={faviconFor(url)} alt="" className="h-4 w-4 shrink-0" />
-                ) : (
-                  <Globe className="h-4 w-4 shrink-0" />
-                )}
-                <span className="truncate flex-1 text-left">{t.loading ? "Loading…" : (t.title || "New Tab")}</span>
-                <span
-                  role="button"
-                  onClick={(e) => { e.stopPropagation(); closeTab(t.id); }}
-                  className="opacity-0 group-hover:opacity-100 hover:bg-accent rounded p-0.5 transition-opacity"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </span>
-              </button>
-            );
-          })}
-          <button onClick={addTab} className="h-9 w-9 grid place-items-center rounded-md hover:bg-accent text-muted-foreground shrink-0" aria-label="New tab">
-            <Plus className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 px-3 py-2 bg-chrome border-b border-border">
-        <IconBtn onClick={back} disabled={active.index === 0} label="Back"><ArrowLeft className="h-4 w-4" /></IconBtn>
-        <IconBtn onClick={forward} disabled={active.index >= active.history.length - 1} label="Forward"><ArrowRight className="h-4 w-4" /></IconBtn>
-        <IconBtn onClick={refresh} label="Reload"><RotateCw className={`h-4 w-4 ${active.loading ? "animate-spin" : ""}`} /></IconBtn>
-        <IconBtn onClick={goHome} label="Home"><Home className="h-4 w-4" /></IconBtn>
+      <div className="flex items-center gap-1 px-2 py-2 bg-chrome border-b border-border">
+        <IconBtn onClick={goHome} label="Home"><Home className="h-5 w-5" /></IconBtn>
 
         <form onSubmit={onAddressSubmit} className="flex-1 relative">
           <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
-            {isHttps ? <Lock className="h-3.5 w-3.5 text-emerald-600" />
+            {isHttps ? <Lock className="h-3.5 w-3.5 text-muted-foreground" />
               : isHttp ? <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
               : <Search className="h-3.5 w-3.5 text-muted-foreground" />}
           </div>
@@ -191,24 +153,40 @@ export function Browser() {
             onChange={(e) => setAddressValue(e.target.value)}
             onFocus={(e) => { setAddressFocused(true); e.currentTarget.select(); }}
             onBlur={() => { setAddressFocused(false); setAddressValue(isNewTab ? "" : currentUrl); }}
-            placeholder="Search DuckDuckGo or type a URL"
-            className="w-full h-9 pl-9 pr-10 rounded-full bg-background border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all"
+            placeholder="Search or type URL"
+            className="w-full h-9 pl-8 pr-8 rounded-full bg-accent/60 border-0 focus:bg-background focus:ring-2 focus:ring-primary/20 outline-none text-sm truncate"
           />
-          <button type="button" onClick={toggleBookmark} disabled={isNewTab}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-accent disabled:opacity-30" aria-label="Bookmark">
-            {currentBookmark ? <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> : <StarOff className="h-4 w-4 text-muted-foreground" />}
-          </button>
+          {!isNewTab && (
+            <button type="button" onClick={toggleBookmark}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-background/60" aria-label="Bookmark">
+              {currentBookmark ? <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> : <StarOff className="h-4 w-4 text-muted-foreground" />}
+            </button>
+          )}
         </form>
 
-        <IconBtn onClick={() => setShowHistory(true)} label="History"><HistoryIcon className="h-4 w-4" /></IconBtn>
-        <IconBtn onClick={() => setDark(d => !d)} label="Toggle theme">{dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</IconBtn>
+        <IconBtn onClick={addTab} label="New tab"><Plus className="h-5 w-5" /></IconBtn>
+
+        <button
+          onClick={() => setShowTabs(true)}
+          aria-label="Tabs"
+          className="h-9 w-9 grid place-items-center rounded-md hover:bg-accent text-foreground"
+        >
+          <span className="relative h-6 w-6 grid place-items-center rounded-[6px] border-2 border-current">
+            <span className="text-[10px] font-semibold leading-none">{tabs.length > 99 ? "99+" : tabs.length}</span>
+          </span>
+        </button>
+
         <div className="relative">
-          <IconBtn onClick={() => setShowMenu(s => !s)} label="Menu"><MoreVertical className="h-4 w-4" /></IconBtn>
+          <IconBtn onClick={() => setShowMenu(s => !s)} label="Menu"><MoreVertical className="h-5 w-5" /></IconBtn>
           {showMenu && (
             <div className="absolute right-0 top-10 z-40 w-56 rounded-lg bg-popover border border-border shadow-lg py-1 text-sm">
               <MenuItem onClick={() => { addTab(); setShowMenu(false); }}>New tab</MenuItem>
+              <MenuItem onClick={() => { back(); setShowMenu(false); }}>Back</MenuItem>
+              <MenuItem onClick={() => { forward(); setShowMenu(false); }}>Forward</MenuItem>
+              <MenuItem onClick={() => { refresh(); setShowMenu(false); }}>Reload</MenuItem>
               <MenuItem onClick={() => { setShowHistory(true); setShowMenu(false); }}>History</MenuItem>
               <MenuItem onClick={() => { clearHistory(); setHistory([]); setShowMenu(false); }}>Clear history</MenuItem>
+              <MenuItem onClick={() => { setDark(d => !d); setShowMenu(false); }}>{dark ? "Light theme" : "Dark theme"}</MenuItem>
               <div className="h-px bg-border my-1" />
               <div className="px-3 py-2 text-xs text-muted-foreground flex items-center gap-2"><Shield className="h-3 w-3" /> Bromony Browser v1.0</div>
             </div>
