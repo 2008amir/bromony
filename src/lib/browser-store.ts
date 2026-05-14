@@ -35,5 +35,5 @@ export const resolveInput = (input: string): string => {
     return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
   }
   const q = encodeURIComponent(trimmed);
-  return `https://www.google.com/search?q=${q}&oq=${q}&sourceid=chrome&ie=UTF-8`;
+  return `https://www.google.com/search?q=${q}`;
 };
