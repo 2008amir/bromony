@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
 import { faviconFor, getHistory, type Bookmark, type HistoryEntry } from "@/lib/browser-store";
 
 const SHORTCUTS = [
