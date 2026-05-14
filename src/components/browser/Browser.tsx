@@ -71,6 +71,11 @@ export function Browser() {
   const navigate = (raw: string, tabId = activeId) => {
     const url = resolveInput(raw);
     if (!url) return;
+    if (getGoogleQuery(url) !== null) {
+      window.open(url, "_blank", "noopener,noreferrer");
+      recordHistory(url, "Google Search");
+      return;
+    }
     setTabs(ts => ts.map(t => {
       if (t.id !== tabId) return t;
       const newHistory = [...t.history.slice(0, t.index + 1), url];
@@ -334,99 +339,78 @@ function getGoogleQuery(url: string): string | null {
   } catch { return null; }
 }
 
-
+type DDGResult = { Text: string; FirstURL: string };
 
 function SearchResults({
-  query, googleUrl, onReady,
+  query, googleUrl, onReady, onNavigate,
 }: { query: string; googleUrl: string; onReady: () => void; onNavigate: (u: string) => void }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [failed, setFailed] = useState(false);
-  const openedRef = useRef(false);
-
-  const openFallback = () => {
-    if (openedRef.current) return;
-    openedRef.current = true;
-    setFailed(true);
-    try { window.open(googleUrl, "_blank", "noopener,noreferrer"); } catch {}
-  };
+  const [results, setResults] = useState<DDGResult[]>([]);
+  const [abstract, setAbstract] = useState<{ text: string; url: string; heading: string } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const CSE_SRC = "https://cse.google.com/cse.js?cx=b3263617a6dc449e5";
     let cancelled = false;
-
-    const ensureScript = () => new Promise<void>((resolve, reject) => {
-      if ((window as any).google?.search?.cse) return resolve();
-      const existing = document.querySelector(`script[src="${CSE_SRC}"]`) as HTMLScriptElement | null;
-      if (existing) {
-        existing.addEventListener("load", () => resolve(), { once: true });
-        existing.addEventListener("error", () => reject(new Error("cse load error")), { once: true });
-        if ((window as any).google?.search?.cse) resolve();
-        return;
-      }
-      const s = document.createElement("script");
-      s.src = CSE_SRC;
-      s.async = true;
-      s.onload = () => resolve();
-      s.onerror = () => reject(new Error("cse load error"));
-      document.head.appendChild(s);
-    });
-
-    const timeoutId = window.setTimeout(() => {
-      if (cancelled) return;
-      const el = containerRef.current;
-      const hasResults = el && el.querySelector(".gsc-result, .gsc-webResult, .gsc-resultsbox-visible");
-      if (!hasResults) {
-        openFallback();
-        onReady();
-      }
-    }, 6000);
-
-    ensureScript()
-      .then(() => {
+    setLoading(true);
+    fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`)
+      .then(r => r.json())
+      .then(data => {
         if (cancelled) return;
-        const el = containerRef.current;
-        if (!el) return;
-        el.innerHTML = `<div class="gcse-searchresults-only" data-queryParameterName="q"></div>`;
-        try {
-          (window as any).google.search.cse.element.render({
-            div: el.firstElementChild as HTMLElement,
-            tag: "searchresults-only",
-            attributes: { queryParameterName: "q" },
-          });
-          const cse = (window as any).google?.search?.cse;
-          const elements = cse?.element?.getAllElements?.() || {};
-          Object.keys(elements).forEach(k => { try { elements[k].execute(query); } catch {} });
-        } catch {
-          openFallback();
-        }
+        const flat: DDGResult[] = [];
+        const walk = (arr: any[]) => {
+          for (const it of arr || []) {
+            if (it.Topics) walk(it.Topics);
+            else if (it.FirstURL && it.Text) flat.push({ Text: it.Text, FirstURL: it.FirstURL });
+          }
+        };
+        walk(data.RelatedTopics || []);
+        walk(data.Results || []);
+        setResults(flat.slice(0, 12));
+        if (data.AbstractText) setAbstract({ text: data.AbstractText, url: data.AbstractURL, heading: data.Heading });
+        setLoading(false);
         onReady();
       })
-      .catch(() => {
-        if (cancelled) return;
-        openFallback();
-        onReady();
-      });
-
-    return () => { cancelled = true; window.clearTimeout(timeoutId); };
+      .catch(() => { if (!cancelled) { setLoading(false); onReady(); } });
+    return () => { cancelled = true; };
   }, [query]);
 
   return (
     <div className="min-h-full w-full bg-background px-6 py-6 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl font-semibold">Google results for "{query}"</h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            <a href={googleUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">Open on google.com →</a>
-          </p>
+          <h1 className="text-2xl font-semibold">Results for "{query}"</h1>
+          <p className="text-xs text-muted-foreground mt-1">Powered by DuckDuckGo · Google blocks in-app embedding</p>
         </div>
+        <a href={googleUrl} target="_blank" rel="noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
+          Open Google results
+        </a>
       </div>
-      {failed && (
-        <div className="mb-4 p-3 rounded-md border border-border bg-muted/40 text-sm">
-          <p className="mb-2">Embedded results couldn't load. We opened the full Google results in a new tab.</p>
-          <a href={googleUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">Open results again →</a>
+
+      {loading && <p className="text-sm text-muted-foreground">Searching…</p>}
+
+      {abstract && (
+        <div className="mb-6 p-4 rounded-lg border border-border bg-card">
+          <h2 className="font-semibold mb-1">{abstract.heading}</h2>
+          <p className="text-sm text-muted-foreground mb-2">{abstract.text}</p>
+          <button onClick={() => onNavigate(abstract.url)} className="text-xs text-primary hover:underline">{abstract.url}</button>
         </div>
       )}
-      <div ref={containerRef} className="gcse-container" />
+
+      <ul className="space-y-4">
+        {results.map((r, i) => (
+          <li key={i}>
+            <button onClick={() => onNavigate(r.FirstURL)} className="text-left group">
+              <div className="text-xs text-muted-foreground truncate">{r.FirstURL}</div>
+              <div className="text-primary group-hover:underline font-medium">{r.Text.split(" - ")[0]}</div>
+              <div className="text-sm text-muted-foreground">{r.Text}</div>
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {!loading && results.length === 0 && !abstract && (
+        <p className="text-sm text-muted-foreground">No instant results. Use "Open Google results" above.</p>
+      )}
     </div>
   );
 }
