@@ -27,13 +27,24 @@ export const faviconFor = (url: string) => {
 export const resolveInput = (input: string): string => {
   const trimmed = input.trim();
   if (!trimmed) return "";
-  // URL detection
-  const urlLike = /^(https?:\/\/)/i.test(trimmed) ||
-    /^[a-z0-9-]+(\.[a-z0-9-]+)+(\/.*)?$/i.test(trimmed) ||
-    /^localhost(:\d+)?/i.test(trimmed);
-  if (urlLike) {
-    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  // If the user provided a full URL, keep it.
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+
+  // Localhost shorthand (allow :port)
+  if (/^localhost(:\d+)?(\/.*)?$/i.test(trimmed)) return `http://${trimmed}`;
+
+  // If the input contains whitespace, treat it as a search query.
+  if (/\s/.test(trimmed)) {
+    const q = encodeURIComponent(trimmed);
+    return `https://www.google.com/search?q=${q}`;
   }
+
+  // If it looks like a domain (contains a dot), navigate to it with https.
+  if (/^[^\s@]+\.[^\s@]+$/i.test(trimmed)) {
+    return `https://${trimmed}`;
+  }
+
+  // Fallback: perform a Google search.
   const q = encodeURIComponent(trimmed);
-  return `https://html.duckduckgo.com/html/?q=${q}`;
+  return `https://www.google.com/search?q=${q}`;
 };
