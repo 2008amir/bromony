@@ -34,6 +34,7 @@ export function Browser() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showTabs, setShowTabs] = useState(false);
   const [dark, setDark] = useState(false);
   const addressRef = useRef<HTMLInputElement>(null);
 
