@@ -245,18 +245,6 @@ export function Browser() {
               </div>
             ) : null;
           }
-          const searchQ = getGoogleQuery(url);
-          if (searchQ !== null) {
-            return visible ? (
-              <div key={`${t.id}-${t.key}`} className="absolute inset-0 overflow-auto">
-                <SearchResults
-                  query={searchQ}
-                  googleUrl={url}
-                  onReady={() => updateTab(t.id, { loading: false })}
-                  onNavigate={(u) => navigate(u, t.id)}
-                />
-              </div>
-            ) : null;
           }
           return (
             <iframe
