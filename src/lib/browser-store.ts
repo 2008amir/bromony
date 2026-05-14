@@ -35,5 +35,5 @@ export const resolveInput = (input: string): string => {
     return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
   }
   const q = encodeURIComponent(trimmed);
-  return `https://duckduckgo.com/?q=${q}`;
+  return `https://html.duckduckgo.com/html/?q=${q}`;
 };
