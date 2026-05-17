@@ -268,18 +268,18 @@ export function Browser() {
               <button onClick={() => setShowTabs(false)} className="h-9 w-9 grid place-items-center rounded-full hover:bg-accent" aria-label="Close"><X className="h-5 w-5" /></button>
             </div>
           </div>
-          <div className="flex-1 overflow-auto p-3 grid grid-cols-2 gap-3">
+          <div className="flex-1 overflow-auto p-3 flex flex-wrap gap-3 content-start">
             {tabs.map(t => {
               const url = t.history[t.index];
               const isActive = t.id === activeId;
               return (
-                <div key={t.id} className={`relative rounded-xl border ${isActive ? "border-primary" : "border-border"} bg-card overflow-hidden`}>
-                  <button onClick={() => { setActiveId(t.id); setShowTabs(false); }} className="w-full text-left">
-                    <div className="flex items-center gap-2 px-3 py-2">
+                <div key={t.id} style={{ width: "40%", height: "40%" }} className={`relative rounded-xl border ${isActive ? "border-primary" : "border-border"} bg-card overflow-hidden flex flex-col`}>
+                  <button onClick={() => { setActiveId(t.id); setShowTabs(false); }} className="w-full h-full text-left flex flex-col">
+                    <div className="flex items-center gap-2 px-3 py-2 shrink-0">
                       {url !== NEW_TAB ? <img src={faviconFor(url)} alt="" className="h-4 w-4" /> : <Globe className="h-4 w-4 text-muted-foreground" />}
                       <span className="truncate text-sm flex-1">{t.title || "New Tab"}</span>
                     </div>
-                    <div className="h-32 bg-muted/40 px-3 py-2 text-[11px] text-muted-foreground truncate border-t border-border">
+                    <div className="flex-1 bg-muted/40 px-3 py-2 text-[11px] text-muted-foreground truncate border-t border-border">
                       {url === NEW_TAB ? "Bromony" : url}
                     </div>
                   </button>
