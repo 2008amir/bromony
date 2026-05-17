@@ -273,7 +273,7 @@ export function Browser() {
               const url = t.history[t.index];
               const isActive = t.id === activeId;
               return (
-                <div key={t.id} className={`relative rounded-xl border ${isActive ? "border-primary" : "border-border"} bg-card overflow-hidden`}>
+                <div key={t.id} style={{ width: "40%", height: "40%" }} className={`relative rounded-xl border ${isActive ? "border-primary" : "border-border"} bg-card overflow-hidden flex flex-col`}>
                   <button onClick={() => { setActiveId(t.id); setShowTabs(false); }} className="w-full text-left">
                     <div className="flex items-center gap-2 px-3 py-2">
                       {url !== NEW_TAB ? <img src={faviconFor(url)} alt="" className="h-4 w-4" /> : <Globe className="h-4 w-4 text-muted-foreground" />}
