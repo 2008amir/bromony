@@ -22,6 +22,10 @@ export const Route = createFileRoute("/api/browser")({
           return new Response("Unsupported protocol", { status: 400 });
         }
 
+        if (isPrivateHost(targetUrl.hostname)) {
+          return new Response("Blocked host", { status: 400 });
+        }
+
         const upstream = await fetch(targetUrl, {
           headers: {
             "accept": request.headers.get("accept") || "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -85,4 +89,15 @@ function rewriteSrcset(value: string, base: string) {
 
 function rewriteCss(css: string, base: string) {
   return css.replace(/url\((['"]?)(.*?)\1\)/gi, (_match, quote, value) => `url(${quote}${proxiedUrl(value, base)}${quote})`);
+}
+
+function isPrivateHost(hostname: string) {
+  const host = hostname.toLowerCase();
+  if (host === "localhost" || host.endsWith(".localhost")) return true;
+  if (/^(127|10)\./.test(host)) return true;
+  if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(host)) return true;
+  if (/^192\.168\./.test(host)) return true;
+  if (/^169\.254\./.test(host)) return true;
+  if (host === "0.0.0.0" || host === "::1" || host === "[::1]") return true;
+  return false;
 }
