@@ -231,7 +231,7 @@ export function Browser() {
               title={t.title}
               onLoad={() => updateTab(t.id, { loading: false })}
               className={`absolute inset-0 w-full h-full bg-white ${visible ? "block" : "hidden"}`}
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+              sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
               referrerPolicy="no-referrer-when-downgrade"
             />
           );
