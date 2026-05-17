@@ -268,7 +268,7 @@ export function Browser() {
               <button onClick={() => setShowTabs(false)} className="h-9 w-9 grid place-items-center rounded-full hover:bg-accent" aria-label="Close"><X className="h-5 w-5" /></button>
             </div>
           </div>
-          <div className="flex-1 overflow-auto p-3 grid grid-cols-2 gap-3">
+          <div className="flex-1 overflow-auto p-3 flex flex-wrap gap-3 content-start">
             {tabs.map(t => {
               const url = t.history[t.index];
               const isActive = t.id === activeId;
