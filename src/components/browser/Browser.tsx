@@ -227,11 +227,11 @@ export function Browser() {
           return (
             <iframe
               key={`${t.id}-${t.key}`}
-              src={url}
+              src={browserProxyUrl(url)}
               title={t.title}
               onLoad={() => updateTab(t.id, { loading: false })}
               className={`absolute inset-0 w-full h-full bg-white ${visible ? "block" : "hidden"}`}
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+              sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
               referrerPolicy="no-referrer-when-downgrade"
             />
           );
@@ -332,5 +332,9 @@ function MenuItem({ children, onClick }: { children: React.ReactNode; onClick: (
 
 function hostnameOf(url: string) {
   try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; }
+}
+
+function browserProxyUrl(url: string) {
+  return `/api/browser?url=${encodeURIComponent(url)}`;
 }
 

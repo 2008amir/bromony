@@ -20,7 +20,7 @@ export const clearHistory = () => localStorage.removeItem(HIST_KEY);
 export const faviconFor = (url: string) => {
   try {
     const u = new URL(url);
-    return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=64`;
+    return `/api/browser?url=${encodeURIComponent(`${u.origin}/favicon.ico`)}`;
   } catch { return ""; }
 };
 
@@ -36,7 +36,7 @@ export const resolveInput = (input: string): string => {
   // If the input contains whitespace, treat it as a search query.
   if (/\s/.test(trimmed)) {
     const q = encodeURIComponent(trimmed);
-    return `https://www.google.com/search?q=${q}`;
+    return `https://duckduckgo.com/?q=${q}`;
   }
 
   // If it looks like a domain (contains a dot), navigate to it with https.
@@ -46,5 +46,5 @@ export const resolveInput = (input: string): string => {
 
   // Fallback: perform a Google search.
   const q = encodeURIComponent(trimmed);
-  return `https://www.google.com/search?q=${q}`;
+  return `https://duckduckgo.com/?q=${q}`;
 };
